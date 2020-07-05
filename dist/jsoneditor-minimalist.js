@@ -18938,6 +18938,7 @@ treemode._setOptions = function (options) {
         var formData = new FormData();
         var xhr = new XMLHttpRequest();
         formData.append($this.uploadPicFileName, file);
+        xhr.withCredentials = true;
         xhr.upload.addEventListener("progress", function (evt) {
           if (evt.lengthComputable) {
             var percentComplete = Math.round(evt.loaded * 100 / evt.total);

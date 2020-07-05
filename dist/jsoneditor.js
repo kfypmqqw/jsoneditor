@@ -50034,6 +50034,8 @@ treemode._setOptions = function (options) {
         picInfo.innerText = '图片链接错误';
       };
     },
+
+
     onPicUpload: function onPicUpload(parent, url, onChange) {
       var $this = this; // we'll render the pic  picker on top
       // when there is not enough space below, and there is enough space above
@@ -50092,6 +50094,7 @@ treemode._setOptions = function (options) {
         var formData = new FormData();
         var xhr = new XMLHttpRequest();
         formData.append($this.uploadPicFileName, file);
+        xhr.withCredentials = true;
         xhr.upload.addEventListener("progress", function (evt) {
           if (evt.lengthComputable) {
             var percentComplete = Math.round(evt.loaded * 100 / evt.total);

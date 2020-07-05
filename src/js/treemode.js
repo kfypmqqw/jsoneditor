@@ -130,6 +130,7 @@ treemode._setOptions = function (options) {
     limitDragging: false,
     onSelectionChange: null,
     colorPicker: true,
+    picPick: true,
     onColorPicker: function (parent, color, onChange) {
       if (VanillaPicker) {
         // we'll render the color picker on top
@@ -156,6 +157,134 @@ treemode._setOptions = function (options) {
             'Either use the full bundle or implement your own color picker using `onColorPicker`.')
       }
     },
+    onPicPreview: function (parent, url) {
+      // we'll render the color picker on top
+      // when there is not enough space below, and there is enough space above
+      const pickerHeight = 300 // estimated height of the color picker
+      const top = parent.getBoundingClientRect().top
+      const windowHeight = window.innerHeight
+      const showOnTop = ((windowHeight - top) < pickerHeight && top > pickerHeight)
+      const wrapper = document.createElement('div')
+      const picInfo = document.createElement('div')
+      const img = document.createElement('img')
+
+      parent.appendChild(wrapper)
+      wrapper.appendChild(picInfo)
+      wrapper.className = 'pic_preview_wrapper'
+
+      picInfo.className = 'pic-info'
+      picInfo.innerText = 'loading...'
+
+
+      img.src = url
+      img.onload = function() {
+        picInfo.innerText = `${img.naturalWidth} x ${img.naturalHeight}`
+        wrapper.appendChild(img)
+      }
+      img.onerror = function() {
+        picInfo.innerText = '图片链接错误'
+      }
+
+    },
+    onPicUpload: function (parent, url, onChange) {
+      const $this = this;
+
+      // we'll render the pic  picker on top
+      // when there is not enough space below, and there is enough space above
+      const pickerHeight = 300 // estimated height of the pic picker
+      const top = parent.getBoundingClientRect().top
+      const windowHeight = window.innerHeight
+      const showOnTop = ((windowHeight - top) < pickerHeight && top > pickerHeight)
+      const wrapper = document.createElement('div')
+      const input = document.createElement('input')
+      const picInfo = document.createElement('div')
+      const uploadContainer = document.createElement('div')
+
+      parent.appendChild(wrapper)
+      wrapper.appendChild(uploadContainer)
+      wrapper.appendChild(picInfo)
+      uploadContainer.appendChild(input)
+      input.type = 'file'
+      input.style.display = 'none'
+      wrapper.className = 'pic_upload_wrapper'
+      uploadContainer.className = 'pic_upload'
+
+      picInfo.className = 'pic-info'
+      picInfo.innerText = '点击按钮或者拖拽上传图片'
+
+      uploadContainer.onclick = function(e) {
+        input.click()
+      }
+      input.onchange = function (e) {
+        uploadFile(this.files[0])
+      }
+      uploadContainer.ondragenter = function(e){
+        e.preventDefault()
+      }
+
+      uploadContainer.ondragover = function(e){
+        e.preventDefault()
+        addClassName(this, 'dragover')
+      }
+
+      uploadContainer.ondragleave = function(e){
+        e.preventDefault()
+        removeClassName(this, 'dragover')
+      }
+
+      uploadContainer.ondrop = function(e){
+        e.preventDefault()
+        removeClassName(this, 'dragover')
+        const file = e.dataTransfer.files[0]
+        uploadFile(file)
+      }
+      function uploadFile(file) {
+        uploadContainer.style.display = 'none'
+        const formData = new FormData()
+        const xhr = new XMLHttpRequest()
+        formData.append($this.uploadPicFileName, file)
+        xhr.upload.addEventListener("progress", (evt) => {
+          if (evt.lengthComputable) {
+            let percentComplete = Math.round(evt.loaded * 100 / evt.total)
+            picInfo.innerText = `上传进度：${percentComplete}%`
+            if (percentComplete === 100) {
+              picInfo.innerText = '上传完成，后台处理中，请稍等。'
+            }
+          }
+          else {
+          }
+        }, false)
+        xhr.onreadystatechange = function(){
+          if(this.readyState === 4) {
+            let message = ''
+            const data = JSON.parse(this.responseText)
+            if (data.status === 401) {
+              message = '登录过期，3秒后跳转到登录页'
+            } else if (data.status === 403) {
+              message = data.message ? data.message : '无操作权限'
+            } else if (data.status === 500) {
+              message = data.message ? data.message : '操作失败'
+            } else if (data.status === 404) {
+              message = '未找到请求链接'
+            }
+            if (!message && this.status !== 200) {
+              message = '系统错误'
+            }
+            if (!message) {
+              message = '上传成功，并已成功替换表单值'
+              if (onChange) {
+                onChange(data.data)
+              }
+            }
+            picInfo.innerText = message
+          }
+        }
+        xhr.open("post", $this.uploadPicUrl)
+        xhr.send(formData)
+      }
+    },
+    uploadPicUrl: null,
+    uploadPicFileName: "file",
     timestampTag: true,
     timestampFormat: null,
     createQuery,

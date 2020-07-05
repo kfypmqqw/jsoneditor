@@ -1231,6 +1231,15 @@ export function isValidColor (color) {
 }
 
 /**
+ * Test if a string contains a valid picture url.
+ * @param {string} url
+ * @returns {boolean} returns true if a picture url, false otherwise
+ */
+export function isValidPicUrl (url) {
+  return /^((https?:\/\/)?([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6})?\/?[a-zA-Z0-9\-]+(\/[a-zA-Z0-9\-]+)*\.(png|jpg|jpeg|PNG|JPG|JPEG)$/.test(url)
+}
+
+/**
  * Make a tooltip for a field based on the field's schema.
  * @param {object} schema JSON schema
  * @param {string} [locale] Locale code (for example, zh-CN)

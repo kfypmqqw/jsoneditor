@@ -49,6 +49,9 @@ div {
     &.jsoneditor-color-value {
       color: $jse-color-value;
     }
+    &.jsoneditor-pic-value {
+      color: $jse-content-color;
+    }
     &.jsoneditor-invalid {
       color: $jse-invalid;
     }
@@ -189,6 +192,13 @@ div {
         display: inline-block;
         padding: 3px;
         margin: 0 3px;
+      }
+      &.jsoneditor-pic {
+        background: url($jse-icons) -101px -124px;
+        width: 15px;
+        height: 15px;
+        margin: 4px;
+        cursor: pointer;
       }
     }
     table {
@@ -549,6 +559,53 @@ pre.jsoneditor-preview,
       &.popup_bottom {
         top: 28px;
         left: -10px;
+      }
+    }
+  }
+
+  .pic_preview_wrapper {
+    margin-top: 15px;
+    width: 150px;
+    border: 1px solid $jse-bar-border;
+    cursor: default;
+    .pic-info {
+      background-color: $jse-white;
+      text-align: center;
+      border-bottom: 1px solid $jse-bar-border;
+      padding: 5px;
+    }
+    img {
+      width: 150px;
+    }
+  }
+
+  .pic_upload_wrapper {
+    margin: 15px 0 0 15px;
+    border: 1px solid $jse-bar-border;
+    width: 150px;
+    background-color: $jse-white;
+    cursor: default;
+    .pic-info {
+      text-align: center;
+      border-top: 1px solid $jse-bar-border;
+      padding: 5px;
+    }
+    .pic_upload {
+      width: 100%;
+      height: 150px;
+      text-align: center;
+      cursor: pointer;
+      &::after {
+        width: 100%;
+        height: 150px;
+        content: "+";
+        color: $jse-grey;
+        line-height: 120px;
+        font-size: 100px;
+      }
+      &.dragover {
+        border: 10px dashed $jse-busy-border-color;
+        box-sizing: border-box;
       }
     }
   }

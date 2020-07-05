@@ -20,6 +20,7 @@ import {
   isTimestamp,
   isUrl,
   isValidColor,
+  isValidPicUrl,
   makeFieldTooltip,
   parse,
   parsePath,
@@ -1787,6 +1788,28 @@ export class Node {
         this._deleteDomColor()
       }
 
+      // show pic when value picture url
+      if (this.editable.value &&
+          this.editor.options.picPick &&
+          typeof value === 'string' &&
+        isValidPicUrl(value)) {
+        if (!this.dom.pic) {
+          this.dom.pic = document.createElement('div')
+          this.dom.pic.className = 'jsoneditor-pic'
+
+          this.dom.tdPic = document.createElement('td')
+          this.dom.tdPic.className = 'jsoneditor-tree'
+          this.dom.tdPic.appendChild(this.dom.pic)
+
+          this.dom.tdValue.parentNode.insertBefore(this.dom.tdPic, this.dom.tdValue)
+          addClassName(this.dom.value, 'jsoneditor-pic-value')
+        }
+
+      } else {
+        // cleanup color picker when displayed
+        this._deleteDomPic()
+      }
+
       // show date tag when value is a timestamp in milliseconds
       if (this._showTimestampTag()) {
         if (!this.dom.date) {
@@ -1834,6 +1857,16 @@ export class Node {
       delete this.dom.color
 
       removeClassName(this.dom.value, 'jsoneditor-color-value')
+    }
+  }
+
+  _deleteDomPic () {
+    if (this.dom.pic) {
+      this.dom.tdPic.parentNode.removeChild(this.dom.tdPic)
+      delete this.dom.tdPic
+      delete this.dom.pic
+
+      removeClassName(this.dom.value, 'jsoneditor-pic-value')
     }
   }
 
@@ -2523,6 +2556,14 @@ export class Node {
       this._showColorPicker()
     }
 
+    if ((event.target === node.dom.tdPic || event.target === node.dom.pic)) {
+      if (type === 'mouseover') {
+       this._showPicPreview()
+      } else if (type === 'click') {
+        this._showPicUpload()
+      }
+    }
+
     // swap the value of a boolean when the checkbox displayed left is clicked
     if (type === 'change' && target === dom.checkbox) {
       this.dom.value.innerHTML = !this.value
@@ -3079,6 +3120,55 @@ export class Node {
           node.value = value
           node.updateDom()
           node._debouncedOnChangeValue()
+        }
+      })
+    }
+  }
+
+  /**
+   * show a pic preview
+   * @private
+   */
+  _showPicPreview () {
+    if (typeof this.editor.options.onPicPreview === 'function' && this.dom.pic) {
+      const node = this
+      if (!this.dom.picPreviewAnchor && !this.dom.picUploadAnchor) {
+        // force deleting current pic preview (if any)
+        node._deleteDomPic()
+        node.updateDom()
+
+        this.dom.picPreviewAnchor = createAbsoluteAnchor(this.dom.pic, this.editor.getPopupAnchor(), () => {
+          delete this.dom.picPreviewAnchor
+        }, true, 15)
+
+        this.editor.options.onPicPreview(this.dom.picPreviewAnchor, this.value)
+      }
+    }
+  }
+
+  /**
+   * show a pic upload
+   * @private
+   */
+  _showPicUpload () {
+    if (typeof this.editor.options.onPicUpload === 'function' && this.dom.pic) {
+      const node = this
+      // force deleting current pic upload (if any)
+      node._deleteDomPic()
+      node.updateDom()
+      const picUploadAnchor = createAbsoluteAnchor(this.dom.pic, this.editor.getPopupAnchor(), () => {
+        delete this.dom.picUploadAnchor
+      })
+      this.dom.picUploadAnchor = picUploadAnchor;
+      this.editor.options.onPicUpload(picUploadAnchor, this.value, function onChange (value) {
+        if (typeof value === 'string' && value !== node.value) {
+          // force recreating the pic block, to cleanup any attached pic picker
+          node._deleteDomPic();
+
+          node.value = value
+          node.updateDom()
+          node._debouncedOnChangeValue()
+          picUploadAnchor.destroy();
         }
       })
     }

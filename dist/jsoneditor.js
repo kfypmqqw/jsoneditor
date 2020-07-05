@@ -25,7 +25,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 9.0.1
- * @date    2020-07-02
+ * @date    2020-07-05
  */
 
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -172,6 +172,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "compileJSONPointer", function() { return compileJSONPointer; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getColorCSS", function() { return getColorCSS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isValidColor", function() { return isValidColor; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isValidPicUrl", function() { return isValidPicUrl; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "makeFieldTooltip", function() { return makeFieldTooltip; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "get", function() { return get; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findUniqueName", function() { return findUniqueName; });
@@ -187,7 +188,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isValidationErrorChanged", function() { return isValidationErrorChanged; });
 /* harmony import */ var _polyfills__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(24);
 /* harmony import */ var _polyfills__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_polyfills__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var javascript_natural_sort__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(11);
+/* harmony import */ var javascript_natural_sort__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(12);
 /* harmony import */ var javascript_natural_sort__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(javascript_natural_sort__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _assets_jsonlint_jsonlint__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(22);
 /* harmony import */ var _assets_jsonlint_jsonlint__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_assets_jsonlint_jsonlint__WEBPACK_IMPORTED_MODULE_2__);
@@ -1486,6 +1487,15 @@ function isValidColor(color) {
   return !!getColorCSS(color);
 }
 /**
+ * Test if a string contains a valid picture url.
+ * @param {string} url
+ * @returns {boolean} returns true if a picture url, false otherwise
+ */
+
+function isValidPicUrl(url) {
+  return /^((https?:\/\/)?([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6})?\/?[a-zA-Z0-9\-]+(\/[a-zA-Z0-9\-]+)*\.(png|jpg|jpeg|PNG|JPG|JPEG)$/.test(url);
+}
+/**
  * Make a tooltip for a field based on the field's schema.
  * @param {object} schema JSON schema
  * @param {string} [locale] Locale code (for example, zh-CN)
@@ -2412,7 +2422,7 @@ var PREVIEW_HISTORY_LIMIT = 2 * 1024 * 1024 * 1024; // 2 GB
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ContextMenu; });
-/* harmony import */ var _createAbsoluteAnchor__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(12);
+/* harmony import */ var _createAbsoluteAnchor__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7);
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(0);
 /* harmony import */ var _i18n__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(1);
 
@@ -3073,7 +3083,7 @@ var picoModal = __webpack_require__(14);
 var picoModal_default = /*#__PURE__*/__webpack_require__.n(picoModal);
 
 // EXTERNAL MODULE: ./src/js/assets/selectr/selectr.js
-var selectr = __webpack_require__(10);
+var selectr = __webpack_require__(11);
 var selectr_default = /*#__PURE__*/__webpack_require__.n(selectr);
 
 // EXTERNAL MODULE: ./src/js/i18n.js
@@ -3512,6 +3522,112 @@ function showTransformModal(_ref) {
 
 /***/ }),
 /* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return createAbsoluteAnchor; });
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
+
+/**
+ * Create an anchor element absolutely positioned in the `parent`
+ * element.
+ * @param {HTMLElement} anchor
+ * @param {HTMLElement} parent
+ * @param {function(HTMLElement)} [onDestroy]  Callback when the anchor is destroyed
+ * @param {boolean} [destroyOnMouseOut=false] If true, anchor will be removed on mouse out
+ * @param {number} [leftOffset=0] left offset
+ * @returns {HTMLElement}
+ */
+
+function createAbsoluteAnchor(anchor, parent, onDestroy) {
+  var destroyOnMouseOut = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+  var leftOffset = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 0;
+  var root = getRootNode(anchor);
+  var eventListeners = {};
+  var anchorRect = anchor.getBoundingClientRect();
+  var parentRect = parent.getBoundingClientRect();
+  var absoluteAnchor = document.createElement('div');
+  absoluteAnchor.className = 'jsoneditor-anchor';
+  absoluteAnchor.style.position = 'absolute';
+  absoluteAnchor.style.left = anchorRect.left - parentRect.left + leftOffset + 'px';
+  absoluteAnchor.style.top = anchorRect.top - parentRect.top + 'px';
+  absoluteAnchor.style.width = anchorRect.width - 2 + 'px';
+  absoluteAnchor.style.height = anchorRect.height - 2 + 'px';
+  absoluteAnchor.style.boxSizing = 'border-box';
+  parent.appendChild(absoluteAnchor);
+
+  function destroy() {
+    // remove temporary absolutely positioned anchor
+    if (absoluteAnchor && absoluteAnchor.parentNode) {
+      absoluteAnchor.parentNode.removeChild(absoluteAnchor); // remove all event listeners
+      // all event listeners are supposed to be attached to document.
+
+      for (var name in eventListeners) {
+        if (hasOwnProperty(eventListeners, name)) {
+          var fn = eventListeners[name];
+
+          if (fn) {
+            Object(_util__WEBPACK_IMPORTED_MODULE_0__["removeEventListener"])(root, name, fn);
+          }
+
+          delete eventListeners[name];
+        }
+      }
+
+      if (typeof onDestroy === 'function') {
+        onDestroy(anchor);
+      }
+    }
+  }
+
+  function isOutside(target) {
+    return target !== absoluteAnchor && !Object(_util__WEBPACK_IMPORTED_MODULE_0__["isChildOf"])(target, absoluteAnchor);
+  } // create and attach event listeners
+
+
+  function destroyIfOutside(event) {
+    if (isOutside(event.target)) {
+      destroy();
+    }
+  }
+
+  eventListeners.mousedown = Object(_util__WEBPACK_IMPORTED_MODULE_0__["addEventListener"])(root, 'mousedown', destroyIfOutside);
+  eventListeners.mousewheel = Object(_util__WEBPACK_IMPORTED_MODULE_0__["addEventListener"])(root, 'mousewheel', destroyIfOutside);
+
+  if (destroyOnMouseOut) {
+    var destroyTimer = null;
+
+    absoluteAnchor.onmouseover = function () {
+      clearTimeout(destroyTimer);
+      destroyTimer = null;
+    };
+
+    absoluteAnchor.onmouseout = function () {
+      if (!destroyTimer) {
+        destroyTimer = setTimeout(destroy, 200);
+      }
+    };
+  }
+
+  absoluteAnchor.destroy = destroy;
+  return absoluteAnchor;
+}
+/**
+ * Node.getRootNode shim
+ * @param  {HTMLElement} node node to check
+ * @return {HTMLElement}      node's rootNode or `window` if there is ShadowDOM is not supported.
+ */
+
+function getRootNode(node) {
+  return typeof node.getRootNode === 'function' ? node.getRootNode() : window;
+}
+
+function hasOwnProperty(object, key) {
+  return Object.prototype.hasOwnProperty.call(object, key);
+}
+
+/***/ }),
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3792,7 +3908,7 @@ function unescapeJsonPointer(str) {
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3942,7 +4058,7 @@ var ModeSwitcher = /*#__PURE__*/function () {
 }();
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4078,7 +4194,7 @@ var FocusTracker = /*#__PURE__*/function () {
 }();
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6140,7 +6256,7 @@ Selectr.prototype.getOptionByValue = function (value) {
 module.exports = Selectr;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports) {
 
 /*
@@ -6189,110 +6305,6 @@ module.exports = function naturalSort (a, b) {
 	return 0;
 };
 
-
-/***/ }),
-/* 12 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return createAbsoluteAnchor; });
-/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(0);
-
-/**
- * Create an anchor element absolutely positioned in the `parent`
- * element.
- * @param {HTMLElement} anchor
- * @param {HTMLElement} parent
- * @param {function(HTMLElement)} [onDestroy]  Callback when the anchor is destroyed
- * @param {boolean} [destroyOnMouseOut=false] If true, anchor will be removed on mouse out
- * @returns {HTMLElement}
- */
-
-function createAbsoluteAnchor(anchor, parent, onDestroy) {
-  var destroyOnMouseOut = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
-  var root = getRootNode(anchor);
-  var eventListeners = {};
-  var anchorRect = anchor.getBoundingClientRect();
-  var parentRect = parent.getBoundingClientRect();
-  var absoluteAnchor = document.createElement('div');
-  absoluteAnchor.className = 'jsoneditor-anchor';
-  absoluteAnchor.style.position = 'absolute';
-  absoluteAnchor.style.left = anchorRect.left - parentRect.left + 'px';
-  absoluteAnchor.style.top = anchorRect.top - parentRect.top + 'px';
-  absoluteAnchor.style.width = anchorRect.width - 2 + 'px';
-  absoluteAnchor.style.height = anchorRect.height - 2 + 'px';
-  absoluteAnchor.style.boxSizing = 'border-box';
-  parent.appendChild(absoluteAnchor);
-
-  function destroy() {
-    // remove temporary absolutely positioned anchor
-    if (absoluteAnchor && absoluteAnchor.parentNode) {
-      absoluteAnchor.parentNode.removeChild(absoluteAnchor); // remove all event listeners
-      // all event listeners are supposed to be attached to document.
-
-      for (var name in eventListeners) {
-        if (hasOwnProperty(eventListeners, name)) {
-          var fn = eventListeners[name];
-
-          if (fn) {
-            Object(_util__WEBPACK_IMPORTED_MODULE_0__["removeEventListener"])(root, name, fn);
-          }
-
-          delete eventListeners[name];
-        }
-      }
-
-      if (typeof onDestroy === 'function') {
-        onDestroy(anchor);
-      }
-    }
-  }
-
-  function isOutside(target) {
-    return target !== absoluteAnchor && !Object(_util__WEBPACK_IMPORTED_MODULE_0__["isChildOf"])(target, absoluteAnchor);
-  } // create and attach event listeners
-
-
-  function destroyIfOutside(event) {
-    if (isOutside(event.target)) {
-      destroy();
-    }
-  }
-
-  eventListeners.mousedown = Object(_util__WEBPACK_IMPORTED_MODULE_0__["addEventListener"])(root, 'mousedown', destroyIfOutside);
-  eventListeners.mousewheel = Object(_util__WEBPACK_IMPORTED_MODULE_0__["addEventListener"])(root, 'mousewheel', destroyIfOutside);
-
-  if (destroyOnMouseOut) {
-    var destroyTimer = null;
-
-    absoluteAnchor.onmouseover = function () {
-      clearTimeout(destroyTimer);
-      destroyTimer = null;
-    };
-
-    absoluteAnchor.onmouseout = function () {
-      if (!destroyTimer) {
-        destroyTimer = setTimeout(destroy, 200);
-      }
-    };
-  }
-
-  absoluteAnchor.destroy = destroy;
-  return absoluteAnchor;
-}
-/**
- * Node.getRootNode shim
- * @param  {HTMLElement} node node to check
- * @return {HTMLElement}      node's rootNode or `window` if there is ShadowDOM is not supported.
- */
-
-function getRootNode(node) {
-  return typeof node.getRootNode === 'function' ? node.getRootNode() : window;
-}
-
-function hasOwnProperty(object, key) {
-  return Object.prototype.hasOwnProperty.call(object, key);
-}
 
 /***/ }),
 /* 13 */
@@ -7154,7 +7166,7 @@ module.exports = function(module) {
 
 var URI = __webpack_require__(46)
   , equal = __webpack_require__(18)
-  , util = __webpack_require__(7)
+  , util = __webpack_require__(8)
   , SchemaObject = __webpack_require__(25)
   , traverse = __webpack_require__(48);
 
@@ -7565,7 +7577,7 @@ var ace_default = /*#__PURE__*/__webpack_require__.n(ace);
 var i18n = __webpack_require__(1);
 
 // EXTERNAL MODULE: ./src/js/ModeSwitcher.js
-var ModeSwitcher = __webpack_require__(8);
+var ModeSwitcher = __webpack_require__(9);
 
 // EXTERNAL MODULE: ./src/js/ErrorTable.js
 var ErrorTable = __webpack_require__(15);
@@ -7623,7 +7635,7 @@ var showSortModal = __webpack_require__(5);
 var showTransformModal = __webpack_require__(6);
 
 // EXTERNAL MODULE: ./src/js/FocusTracker.js
-var FocusTracker = __webpack_require__(9);
+var FocusTracker = __webpack_require__(10);
 
 // EXTERNAL MODULE: ./src/js/constants.js
 var constants = __webpack_require__(2);
@@ -9603,7 +9615,7 @@ if (!String.prototype.trim) {
 "use strict";
 
 
-var util = __webpack_require__(7);
+var util = __webpack_require__(8);
 
 module.exports = SchemaObject;
 
@@ -37250,7 +37262,7 @@ var compileSchema = __webpack_require__(45)
   , formats = __webpack_require__(50)
   , rules = __webpack_require__(51)
   , $dataMetaSchema = __webpack_require__(72)
-  , util = __webpack_require__(7);
+  , util = __webpack_require__(8);
 
 module.exports = Ajv;
 
@@ -37756,7 +37768,7 @@ function noop() {}
 
 
 var resolve = __webpack_require__(17)
-  , util = __webpack_require__(7)
+  , util = __webpack_require__(8)
   , errorClasses = __webpack_require__(19)
   , stableStringify = __webpack_require__(26);
 
@@ -39698,7 +39710,7 @@ Cache.prototype.clear = function Cache_clear() {
 "use strict";
 
 
-var util = __webpack_require__(7);
+var util = __webpack_require__(8);
 
 var DATE = /^(\d\d\d\d)-(\d\d)-(\d\d)$/;
 var DAYS = [0,31,28,31,30,31,30,31,31,30,31,30,31];
@@ -39848,7 +39860,7 @@ function regex(str) {
 
 
 var ruleModules = __webpack_require__(52)
-  , toHash = __webpack_require__(7).toHash;
+  , toHash = __webpack_require__(8).toHash;
 
 module.exports = function rules() {
   var RULES = [
@@ -43817,11 +43829,11 @@ var TreePath_TreePath = /*#__PURE__*/function () {
   return TreePath;
 }();
 // EXTERNAL MODULE: ./node_modules/javascript-natural-sort/naturalSort.js
-var naturalSort = __webpack_require__(11);
+var naturalSort = __webpack_require__(12);
 var naturalSort_default = /*#__PURE__*/__webpack_require__.n(naturalSort);
 
 // EXTERNAL MODULE: ./src/js/createAbsoluteAnchor.js
-var createAbsoluteAnchor = __webpack_require__(12);
+var createAbsoluteAnchor = __webpack_require__(7);
 
 // CONCATENATED MODULE: ./src/js/appendNodeFactory.js
 
@@ -46185,16 +46197,31 @@ var Node_Node = /*#__PURE__*/function () {
             this.dom.tdColor = document.createElement('td');
             this.dom.tdColor.className = 'jsoneditor-tree';
             this.dom.tdColor.appendChild(this.dom.color);
-            this.dom.tdValue.parentNode.insertBefore(this.dom.tdColor, this.dom.tdValue); // this is a bit hacky, overriding the text color like this. find a nicer solution
-
-            this.dom.value.style.color = '#1A1A1A';
-          } // update the color background
+            this.dom.tdValue.parentNode.insertBefore(this.dom.tdColor, this.dom.tdValue);
+          } // update styling of value and color background
 
 
+          Object(util["addClassName"])(this.dom.value, 'jsoneditor-color-value');
           this.dom.color.style.backgroundColor = value;
         } else {
           // cleanup color picker when displayed
           this._deleteDomColor();
+        } // show pic when value picture url
+
+
+        if (this.editable.value && this.editor.options.picPick && typeof value === 'string' && Object(util["isValidPicUrl"])(value)) {
+          if (!this.dom.pic) {
+            this.dom.pic = document.createElement('div');
+            this.dom.pic.className = 'jsoneditor-pic';
+            this.dom.tdPic = document.createElement('td');
+            this.dom.tdPic.className = 'jsoneditor-tree';
+            this.dom.tdPic.appendChild(this.dom.pic);
+            this.dom.tdValue.parentNode.insertBefore(this.dom.tdPic, this.dom.tdValue);
+            Object(util["addClassName"])(this.dom.value, 'jsoneditor-pic-value');
+          }
+        } else {
+          // cleanup color picker when displayed
+          this._deleteDomPic();
         } // show date tag when value is a timestamp in milliseconds
 
 
@@ -46247,7 +46274,17 @@ var Node_Node = /*#__PURE__*/function () {
         this.dom.tdColor.parentNode.removeChild(this.dom.tdColor);
         delete this.dom.tdColor;
         delete this.dom.color;
-        this.dom.value.style.color = '';
+        Object(util["removeClassName"])(this.dom.value, 'jsoneditor-color-value');
+      }
+    }
+  }, {
+    key: "_deleteDomPic",
+    value: function _deleteDomPic() {
+      if (this.dom.pic) {
+        this.dom.tdPic.parentNode.removeChild(this.dom.tdPic);
+        delete this.dom.tdPic;
+        delete this.dom.pic;
+        Object(util["removeClassName"])(this.dom.value, 'jsoneditor-pic-value');
       }
     }
     /**
@@ -46984,6 +47021,14 @@ var Node_Node = /*#__PURE__*/function () {
 
       if (type === 'click' && (event.target === node.dom.tdColor || event.target === node.dom.color)) {
         this._showColorPicker();
+      }
+
+      if (event.target === node.dom.tdPic || event.target === node.dom.pic) {
+        if (type === 'mouseover') {
+          this._showPicPreview();
+        } else if (type === 'click') {
+          this._showPicUpload();
+        }
       } // swap the value of a boolean when the checkbox displayed left is clicked
 
 
@@ -47627,6 +47672,66 @@ var Node_Node = /*#__PURE__*/function () {
       }
     }
     /**
+     * show a pic preview
+     * @private
+     */
+
+  }, {
+    key: "_showPicPreview",
+    value: function _showPicPreview() {
+      var _this2 = this;
+
+      if (typeof this.editor.options.onPicPreview === 'function' && this.dom.pic) {
+        var node = this;
+
+        if (!this.dom.picPreviewAnchor && !this.dom.picUploadAnchor) {
+          // force deleting current pic preview (if any)
+          node._deleteDomPic();
+
+          node.updateDom();
+          this.dom.picPreviewAnchor = Object(createAbsoluteAnchor["a" /* createAbsoluteAnchor */])(this.dom.pic, this.editor.getPopupAnchor(), function () {
+            delete _this2.dom.picPreviewAnchor;
+          }, true, 15);
+          this.editor.options.onPicPreview(this.dom.picPreviewAnchor, this.value);
+        }
+      }
+    }
+    /**
+     * show a pic upload
+     * @private
+     */
+
+  }, {
+    key: "_showPicUpload",
+    value: function _showPicUpload() {
+      var _this3 = this;
+
+      if (typeof this.editor.options.onPicUpload === 'function' && this.dom.pic) {
+        var node = this; // force deleting current pic upload (if any)
+
+        node._deleteDomPic();
+
+        node.updateDom();
+        var picUploadAnchor = Object(createAbsoluteAnchor["a" /* createAbsoluteAnchor */])(this.dom.pic, this.editor.getPopupAnchor(), function () {
+          delete _this3.dom.picUploadAnchor;
+        });
+        this.dom.picUploadAnchor = picUploadAnchor;
+        this.editor.options.onPicUpload(picUploadAnchor, this.value, function onChange(value) {
+          if (typeof value === 'string' && value !== node.value) {
+            // force recreating the pic block, to cleanup any attached pic picker
+            node._deleteDomPic();
+
+            node.value = value;
+            node.updateDom();
+
+            node._debouncedOnChangeValue();
+
+            picUploadAnchor.destroy();
+          }
+        });
+      }
+    }
+    /**
      * Get all field names of an object
      * @param {Node} [excludeNode] Optional node to be excluded from the returned field names
      * @return {string[]}
@@ -48236,10 +48341,10 @@ var Node_Node = /*#__PURE__*/function () {
   }, {
     key: "_getElementName",
     value: function _getElementName(element) {
-      var _this2 = this;
+      var _this4 = this;
 
       return Object.keys(this.dom).find(function (name) {
-        return _this2.dom[name] === element;
+        return _this4.dom[name] === element;
       });
     }
     /**
@@ -48536,7 +48641,7 @@ var Node_Node = /*#__PURE__*/function () {
   }, {
     key: "showTransformModal",
     value: function showTransformModal() {
-      var _this3 = this;
+      var _this5 = this;
 
       var _this$editor$options = this.editor.options,
           modalAnchor = _this$editor$options.modalAnchor,
@@ -48553,7 +48658,7 @@ var Node_Node = /*#__PURE__*/function () {
         createQuery: createQuery,
         executeQuery: executeQuery,
         onTransform: function onTransform(query) {
-          _this3.transform(query);
+          _this5.transform(query);
         }
       });
     }
@@ -49305,10 +49410,10 @@ function Node_hasOwnProperty(object, key) {
 var Node_AppendNode = appendNodeFactory(Node_Node);
 var Node_ShowMoreNode = showMoreNodeFactory(Node_Node);
 // EXTERNAL MODULE: ./src/js/ModeSwitcher.js
-var ModeSwitcher = __webpack_require__(8);
+var ModeSwitcher = __webpack_require__(9);
 
 // EXTERNAL MODULE: ./src/js/FocusTracker.js
-var FocusTracker = __webpack_require__(9);
+var FocusTracker = __webpack_require__(10);
 
 // CONCATENATED MODULE: ./src/js/autocomplete.js
 
@@ -49876,6 +49981,7 @@ treemode._setOptions = function (options) {
     limitDragging: false,
     onSelectionChange: null,
     colorPicker: true,
+    picPick: true,
     onColorPicker: function onColorPicker(parent, color, onChange) {
       if (vanilla_picker_default.a) {
         // we'll render the color picker on top
@@ -49901,6 +50007,139 @@ treemode._setOptions = function (options) {
         console.warn('Cannot open color picker: the `vanilla-picker` library is not included in the bundle. ' + 'Either use the full bundle or implement your own color picker using `onColorPicker`.');
       }
     },
+    onPicPreview: function onPicPreview(parent, url) {
+      // we'll render the color picker on top
+      // when there is not enough space below, and there is enough space above
+      var pickerHeight = 300; // estimated height of the color picker
+
+      var top = parent.getBoundingClientRect().top;
+      var windowHeight = window.innerHeight;
+      var showOnTop = windowHeight - top < pickerHeight && top > pickerHeight;
+      var wrapper = document.createElement('div');
+      var picInfo = document.createElement('div');
+      var img = document.createElement('img');
+      parent.appendChild(wrapper);
+      wrapper.appendChild(picInfo);
+      wrapper.className = 'pic_preview_wrapper';
+      picInfo.className = 'pic-info';
+      picInfo.innerText = 'loading...';
+      img.src = url;
+
+      img.onload = function () {
+        picInfo.innerText = "".concat(img.naturalWidth, " x ").concat(img.naturalHeight);
+        wrapper.appendChild(img);
+      };
+
+      img.onerror = function () {
+        picInfo.innerText = '图片链接错误';
+      };
+    },
+    onPicUpload: function onPicUpload(parent, url, onChange) {
+      var $this = this; // we'll render the pic  picker on top
+      // when there is not enough space below, and there is enough space above
+
+      var pickerHeight = 300; // estimated height of the pic picker
+
+      var top = parent.getBoundingClientRect().top;
+      var windowHeight = window.innerHeight;
+      var showOnTop = windowHeight - top < pickerHeight && top > pickerHeight;
+      var wrapper = document.createElement('div');
+      var input = document.createElement('input');
+      var picInfo = document.createElement('div');
+      var uploadContainer = document.createElement('div');
+      parent.appendChild(wrapper);
+      wrapper.appendChild(uploadContainer);
+      wrapper.appendChild(picInfo);
+      uploadContainer.appendChild(input);
+      input.type = 'file';
+      input.style.display = 'none';
+      wrapper.className = 'pic_upload_wrapper';
+      uploadContainer.className = 'pic_upload';
+      picInfo.className = 'pic-info';
+      picInfo.innerText = '点击按钮或者拖拽上传图片';
+
+      uploadContainer.onclick = function (e) {
+        input.click();
+      };
+
+      input.onchange = function (e) {
+        uploadFile(this.files[0]);
+      };
+
+      uploadContainer.ondragenter = function (e) {
+        e.preventDefault();
+      };
+
+      uploadContainer.ondragover = function (e) {
+        e.preventDefault();
+        Object(util["addClassName"])(this, 'dragover');
+      };
+
+      uploadContainer.ondragleave = function (e) {
+        e.preventDefault();
+        Object(util["removeClassName"])(this, 'dragover');
+      };
+
+      uploadContainer.ondrop = function (e) {
+        e.preventDefault();
+        Object(util["removeClassName"])(this, 'dragover');
+        var file = e.dataTransfer.files[0];
+        uploadFile(file);
+      };
+
+      function uploadFile(file) {
+        uploadContainer.style.display = 'none';
+        var formData = new FormData();
+        var xhr = new XMLHttpRequest();
+        formData.append($this.uploadPicFileName, file);
+        xhr.upload.addEventListener("progress", function (evt) {
+          if (evt.lengthComputable) {
+            var percentComplete = Math.round(evt.loaded * 100 / evt.total);
+            picInfo.innerText = "\u4E0A\u4F20\u8FDB\u5EA6\uFF1A".concat(percentComplete, "%");
+
+            if (percentComplete === 100) {
+              picInfo.innerText = '上传完成，后台处理中，请稍等。';
+            }
+          } else {}
+        }, false);
+
+        xhr.onreadystatechange = function () {
+          if (this.readyState === 4) {
+            var message = '';
+            var data = JSON.parse(this.responseText);
+
+            if (data.status === 401) {
+              message = '登录过期，3秒后跳转到登录页';
+            } else if (data.status === 403) {
+              message = data.message ? data.message : '无操作权限';
+            } else if (data.status === 500) {
+              message = data.message ? data.message : '操作失败';
+            } else if (data.status === 404) {
+              message = '未找到请求链接';
+            }
+
+            if (!message && this.status !== 200) {
+              message = '系统错误';
+            }
+
+            if (!message) {
+              message = '上传成功，并已成功替换表单值';
+
+              if (onChange) {
+                onChange(data.data);
+              }
+            }
+
+            picInfo.innerText = message;
+          }
+        };
+
+        xhr.open("post", $this.uploadPicUrl);
+        xhr.send(formData);
+      }
+    },
+    uploadPicUrl: null,
+    uploadPicFileName: "file",
     timestampTag: true,
     timestampFormat: null,
     createQuery: jmespathQuery["a" /* createQuery */],
@@ -51654,7 +51893,7 @@ __webpack_require__.d(__webpack_exports__, "previewModeMixins", function() { ret
 var i18n = __webpack_require__(1);
 
 // EXTERNAL MODULE: ./src/js/ModeSwitcher.js
-var ModeSwitcher = __webpack_require__(8);
+var ModeSwitcher = __webpack_require__(9);
 
 // EXTERNAL MODULE: ./src/js/ErrorTable.js
 var ErrorTable = __webpack_require__(15);
@@ -51672,7 +51911,7 @@ var textmode = __webpack_require__(21);
 var constants = __webpack_require__(2);
 
 // EXTERNAL MODULE: ./src/js/FocusTracker.js
-var FocusTracker = __webpack_require__(9);
+var FocusTracker = __webpack_require__(10);
 
 // EXTERNAL MODULE: ./src/js/util.js
 var util = __webpack_require__(0);

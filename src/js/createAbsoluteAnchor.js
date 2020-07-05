@@ -7,9 +7,10 @@ import { isChildOf, removeEventListener, addEventListener } from './util'
  * @param {HTMLElement} parent
  * @param {function(HTMLElement)} [onDestroy]  Callback when the anchor is destroyed
  * @param {boolean} [destroyOnMouseOut=false] If true, anchor will be removed on mouse out
+ * @param {number} [leftOffset=0] left offset
  * @returns {HTMLElement}
  */
-export function createAbsoluteAnchor (anchor, parent, onDestroy, destroyOnMouseOut = false) {
+export function createAbsoluteAnchor (anchor, parent, onDestroy, destroyOnMouseOut = false, leftOffset = 0) {
   const root = getRootNode(anchor)
   const eventListeners = {}
 
@@ -19,7 +20,7 @@ export function createAbsoluteAnchor (anchor, parent, onDestroy, destroyOnMouseO
   const absoluteAnchor = document.createElement('div')
   absoluteAnchor.className = 'jsoneditor-anchor'
   absoluteAnchor.style.position = 'absolute'
-  absoluteAnchor.style.left = (anchorRect.left - parentRect.left) + 'px'
+  absoluteAnchor.style.left = (anchorRect.left - parentRect.left + leftOffset) + 'px'
   absoluteAnchor.style.top = (anchorRect.top - parentRect.top) + 'px'
   absoluteAnchor.style.width = (anchorRect.width - 2) + 'px'
   absoluteAnchor.style.height = (anchorRect.height - 2) + 'px'
